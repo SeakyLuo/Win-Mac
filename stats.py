@@ -3,6 +3,7 @@ import math
 
 class stats:
     def __init__(self,*numbers):
+        '''Support int and float numbers only.'''
         self.data=()
         for i in numbers:
             if type(i)==range:
@@ -18,20 +19,85 @@ class stats:
         self.show()
 
     def calculate(self):
+        '''Calculate data.'''
         self.num=len(self.data)
-        if self.num==1:
+        if self.num==1 or self.data==(self.data[0],)*self.num:
             raise Exception('Are you serious???')
-        self.sorted=sorted(self.data)
+        self.sorted=()
+        self.reverse=False
+        self.sort()
         self.count=ez.find(self.sorted).count()
         self.nodup=ez.rmdup(self.data)
-        self.max=max(self.data)
-        self.min=min(self.data)
+        self.Max()
+        self.Min()
         self.mean=sum(self.data)/self.num
-        self.median=self.sorted[self.num//2]
+        if self.mean==int(self.mean):
+            self.mean=int(self.mean)
+        self.Median()
         self.mode=ez.find(self.count).key(max(self.count[k] for k in self.count))
         self.var=sum((data-self.mean)**2 for data in self.data)/self.num
         self.sd=self.var**0.5
         self.group={}
+        self.outlier=None
+        self.Outlier()
+        
+    def sort(self,reverse=False):
+        '''Sort data.'''
+        self.reverse=reverse
+        self.sorted=sorted(self.data,reverse=self.reverse)
+
+    def Max(self,nth=1):
+        '''Find the nth largest number.'''
+        if not self.sorted:
+            self.sort()
+        if self.reverse:
+            self.max=self.sorted[nth-1]
+        else:
+            self.max=self.sorted[-nth]
+
+    def Min(self,nth=1):
+        '''Find the nth least number.'''
+        if not self.sorted:
+            self.sort()
+        if self.reverse:
+            self.min=self.sorted[-nth]
+        else:
+            self.min=self.sorted[nth-1]
+
+    def Mean(self,precision=4):
+        '''Give 5 kinds of mean: Arithmatic Mean, Geometric Mean, Harmonicc Mean, Weighted Arithmatic Mean and Sqaure Mean.'''
+        self.precision=presicion
+        self.AM=sum(self.data)/self.num
+        if self.AM==int(self.AM):
+            self.AM=int(self.AM)
+        self.GM=1
+        for n in self.data:
+            self.GM*=n
+        self.GM=self,geometric**(1/self.num)
+        self.HM=self.num/sum(1/n for n in self.data)
+        self.wAM=sum(k*self.count[k] for k in self.count)/self.num
+        self.SM=(sum(n**2 for n in self.data)/n)**0.5
+        if precision>0:
+            self.AM=round(self.AM,precision)
+            self.GM=round(self.GM,precision)
+            self.HM=round(self.HM,precision)
+            self.wAM=round(self.wAM,precision)
+            self.SM=round(self.SM,precision)
+        print('''Arithmatic Mean: {}
+                Geometric Mean: {}
+                Harmonic Mean: {}
+                Weighted Arithmatic Mean: {}
+                Square Mean: {}'''.format(self.AM,self.GM,self.HM,self.wAM,self.SM))
+
+    def Median(self):
+        '''Find the median.'''
+        if self.num%2:
+            self.median=self.sorted[(self.num-1)//2]
+        else:
+            self.median=(self.sorted[self.num//2-1]+self.sorted[self.num//2])/2
+
+    def Outlier(self):
+        '''Outliers: less than Q1-1.5*interquartile or greater than Q3+1.5*interquartile.'''
         if self.num>=4:
             mod=self.num%4
             if mod:
@@ -42,18 +108,16 @@ class stats:
                 self.q3=(self.sorted[self.num*3//4-1]+self.sorted[self.num*3//4])/2
             self.interquartile=self.q3-self.q1
             self.outlier=ez.rmdup([ i for i in self.sorted if i<self.q1-1.5*self.interquartile or i>self.q3+1.5*self.interquartile])
-
-    def sort(self,key=None,reverse=False):
-        self.sorted=sorted(self.data,key,reverse)
-
-    def add(self,*args):
-        if args:
-            num=len(args)
+    
+    def add(self,*numbers):
+        '''Add numbers to self.data.'''
+        if numbers:
+            num=len(numbers)
             if num==1:
                 print('1 number is added.')
             else:
                 print(str(num)+' numbers are added.')
-            self.data+=args
+            self.data+=numbers
             self.calculate()
         else:
             print('Nothing is added.')
@@ -72,6 +136,7 @@ class stats:
             self.sd=round(self.sd,precision)
 
     def show(self):
+        '''Print data.'''
         print('{} numbers in total.'.format(self.num))
         print('Min: {}'.format(self.min))
         print('Max: {}'.format(self.max))
@@ -89,10 +154,7 @@ class stats:
             print(self.group)
 
     def analyze(self,interval=-1):
-        if self.data==(self.data[0],)*self.num:
-            self.group=self.count
-            print(self.group)
-            return
+        '''Group numbers with interval.'''
         if interval==-1:
             maximum=max(abs(i) for i in self.data)
             minimum=min(abs(i) for i in self.data)
@@ -105,7 +167,7 @@ class stats:
             ddiff=math.floor((math.log(diff,10)))+1
             if dmdiff==0:                
                 interval=10**ddiff
-                if ddiff<=dmax:
+                if ddiff<dmax:
                     self.group=self.count
                     print(self.group)
                     return
@@ -130,7 +192,7 @@ class stats:
 
     def rm(self,number='out',*nums):
         '''Remove all the occurences of user input.
-            Set number to 'out' to remove outliers. (Default)
+            Set number to 'out' to remove outliers (Default).
             Set number to min to remove minimum values.
             Set number to max to remove maximum values.'''
         if number=='out':
