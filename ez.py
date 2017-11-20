@@ -14,9 +14,11 @@ def timeused(func,iteration=1000,*args):
         func(*args)
     return time.time()-t
 
-def read_file(filename,decode='utf8'):
-    '''Requires filename. Default decoding: utf8.'''
-    file=open(filename,encoding=decode)
+def fread(filename,coding='utf8'):
+    '''Read a file.
+        Requires filename.
+        Default coding: utf8.'''
+    file=open(filename,encoding=coding)
     content=file.read()
     try:
         content=eval(content)
@@ -25,19 +27,23 @@ def read_file(filename,decode='utf8'):
     file.close()
     return content
 
-def write_file(filename,content,mode='w',encode='utf8'):
-    '''Requires filename and content.
-        Default mode to write: "w"
-        Default encoding: utf8.'''
-    file=open(filename,mode,encoding=encode)
+def fwrite(filename,content,mode='w',coding='utf8'):
+    ''' Write a file.
+        Requires filename and content.
+        Default mode: "w"
+        Default coding: utf8.'''
+    file=open(filename,mode,encoding=coding)
     if type(content)!=str:
         content=repr(content)
     file.write(content)
     file.close()
 
-def copy_file(src,dst):
+def fcopy(src,dst,coding='utf8'):
+    '''Copy a file.
+        Requires source directory(src) and destination directory(dst).
+        Default coding: utf8.'''
     filename=src[:find(src).last('\\')]
-    write_file(dst+['',filename][have(dst).end(filename)],read_file(src))
+    fwrite(dst+['',filename][have(dst).end(filename)],fread(src,coding),coding=coding)
 
 def advancedSplit(obj,*sep):
     '''Can have multiple seperators.'''
@@ -171,7 +177,7 @@ class have:
         return False
 
     def start(self,*args):
-        '''Check whether the string starts with any occurence in args.'''
+        '''Check whether the string starts with any occurrence in args.'''
         if self.type!=str:
             raise DataTypeError
         for arg in args:
@@ -185,7 +191,7 @@ class have:
     begin=start
 
     def end(self,*args):
-        '''Check whether the string ends with any occurence in args.'''
+        '''Check whether the string ends with any occurrence in args.'''
         if self.type!=str:
             raise DataTypeError
         for arg in args:
@@ -222,54 +228,54 @@ class find:
         else:
             self.obj=obj
 
-    def all(self,occurence):
+    def all(self,occurrence):
         '''Find all the occuring positions in an obj.'''
         if self.type==str:
-            return [ idx for idx in range(len(self.obj)) if occurence==self.obj[idx:idx+len(occurence)]]
+            return [ idx for idx in range(len(self.obj)) if occurrence==self.obj[idx:idx+len(occurrence)]]
         if self.type in [list,tuple]:
-            return [ idx for idx in range(len(self.obj)) if occurence==self.obj[idx]]
+            return [ idx for idx in range(len(self.obj)) if occurrence==self.obj[idx]]
         raise DataTypeError
 
     def any(self,*args):
         '''Find any element of args in obj.'''
         return [arg for arg in args if arg in self.obj]
 
-    def second(self,occurence):
+    def second(self,occurrence):
         '''Find the second occuring positions in an obj.'''
         count=0
         if self.type==str:
             for idx in range(len(self.obj)):
-                if occurence==self.obj[idx:idx+len(occurence)]:
+                if occurrence==self.obj[idx:idx+len(occurrence)]:
                     count+=1
                     if count==2:
                         return idx
         elif self.type in [list,tuple]:
             for idx in range(len(self.obj)):
-                if occurence==self.obj[idx]:
+                if occurrence==self.obj[idx]:
                     count+=1
                     if count==2:
                         return idx
         raise DataTypeError
 
-    def last(self,occurence):
+    def last(self,occurrence):
         '''Find the last occuring position in an obj.'''
-        if occurence not in self.obj:
+        if occurrence not in self.obj:
             return -1
-        index=self.obj.index(occurence)
+        index=self.obj.index(occurrence)
         if self.type==str:
             for idx in range(len(self.obj)-1,index,-1):
-                if self.obj[idx:idx+len(occurence)]==occurence:
+                if self.obj[idx:idx+len(occurrence)]==occurrence:
                     index=idx
                     break
         elif self.type in [list,tuple]:
             for idx in range(len(self.obj)-1,index,-1):
-                if self.obj[idx:]==occurence:
+                if self.obj[idx:]==occurrence:
                     index=idx
                     break
         return index
 
     def between(self,obj1='',obj2=''):
-        '''Return the obj between obj1 and obj2 (first occurence only),both of which are not included.'''
+        '''Return the obj between obj1 and obj2 (first occurrence only),both of which are not included.'''
         if self.type not in [str,list,tuple]:
             raise DataTypeError
         try:
@@ -286,7 +292,7 @@ class find:
             return self.obj.__init__()
 
     def count(self):
-        '''Count the occurences of each element and return a dict.'''
+        '''Count the occurrences of each element and return a dict.'''
         obj=self.obj
         if self.type==str:
             obj=list(obj)
@@ -298,7 +304,7 @@ class find:
         return d
 
     def consecutive(self):
-        '''Count the longest consecutive occurences.'''
+        '''Count the longest consecutive occurrences.'''
         if self.type==dict:
             raise DataTypeError
         maxStreak=streak=1
@@ -325,16 +331,16 @@ class find:
         return [self.obj[j:j+i] for i in range(1,length) for j in range(length+1-i)]
 
 
-def start_with(string,occurence):
-    '''Check whether the string starts with occurence.'''
-    if len(string)>=len(occurence):
-        return string[:len(occurence)]==occurence
+def start_with(string,occurrence):
+    '''Check whether the string starts with occurrence.'''
+    if len(string)>=len(occurrence):
+        return string[:len(occurrence)]==occurrence
     return False
 
-def end_with(string,occurence):
-    '''Check whether the string ends with occurence.'''
-    if len(string)>=len(occurence):
-        return string[-len(occurence):]==occurence
+def end_with(string,occurrence):
+    '''Check whether the string ends with occurrence.'''
+    if len(string)>=len(occurrence):
+        return string[-len(occurrence):]==occurrence
     return False
 
 flatten = lambda x:[y for l in x for y in flatten(l)] if isinstance(x, list) else [x]
@@ -378,56 +384,46 @@ def delta_days(day1,day2):
     delta=(end-start).days+1
     print(abs(delta))
 
-isTextFile=lambda x:have(x.lower()).any('.txt','.doc','docx','.csv','.xls')
-
-def substitute(file='',*args):
-    '''To replace a with b in s, please call substitute(s,a,b).'''
-    if args:
-        if len(args)%2:
-            raise Exception('Please type in the right number of subsitution words!')
-        if isTextFile(file):
-            infile=open(file)
-            content=infile.read()
-            infile.close()
-            for i in range(0,len(args),2):
-                if args[i]:
-                    content=content.replace(args[i],args[i+1])
-            outfile=open(file,'w')
-            outfile.write(content)
-            outfile.close()
-            print('\nCongratulations, your file has been successfully modified!')
-        else:
-            for i in range(0,len(args),2):
-                if args[i]:
-                    file=file.replace(args[i],args[i+1])
-            return file
+def substitute(obj,*args):
+    '''Support data type: str, tuple, list, set.
+        Usage: substitute([1,2,3,4],1,2,2,3) // Returns [3,3,3,4].
+        Abbreviation:sub'''
+    num=len(args)
+    if num==0:
+        return
+    if num%2:
+        raise Exception('Please type in the correct number of subsitution words!')
+    typ=type(obj)
+    if typ==str:
+        new=obj
+        for i in range(0,num,2):
+            subed=args[i]
+            if type(subed)!=str:
+                subed=str(subed)
+            subs=args[i+1]
+            if type(subs)!=str:
+                subs=str(subs)
+            new=new.replace(subed,subs)
     else:
-        inputFile=''
-        if file=='':
-            inputFile=input('By using this function you can subtitute some words with the words you want.\nPlease type a string or a filename you want to work on below:\n>>> ')
-            if isTextFile(inputFile):
-                infile=open(inputFile)
-                file=infile.read()
-                infile.close()
-            else:
-                file=inputFile
-        while True:
-            inputSub=input('Please type in the word you want to substitute here, no input will stop this function.\n>>> ')
-            if inputSub=='':
-                break
-            elif inputSub not in file:
-                print('The word you want is not found! Please type again!')
-                continue
-            inputSubW=input('Please type in the word you want to substitute with here.\n>>> ')
-            file=file.replace(inputSub,inputSubW)
-        if inputFile.find('.')!=-1:
-            outfile=open(inputFile,'w')
-            outfile.write(file)
-            outfile.close()
-            print('\nCongratulations, your file has been successfully modified!')
+        if typ==tuple:
+            new=()
+        elif typ==list:
+            new=[]
+        elif typ==set:
+            new=set()
         else:
-            print ('\nThe file you want is:\n\n{}\n'.format(file))
-
+            raise DataTypeError
+        for item in obj:
+            for i in range(0,num,2):
+                if item==args[i]:
+                    item=args[i+1]
+            if typ==tuple:
+                new+=(item,)
+            elif typ==list:
+                new+=[item]
+            elif typ==set:
+                new.add(item)
+    return new
 
 ##abbreviation
 sub=substitute

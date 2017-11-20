@@ -1,5 +1,5 @@
 import sys
-sys.path.append("Python Files")
+sys.path.append("C:\\Users\\Seaky\\AppData\\Local\\Programs\\Python\\Python36\\Python Files")
 import menu
 import lyrics
 import course
@@ -64,8 +64,11 @@ def coursePlan(*courses):
 ##abbreviation
 cp=coursePlan
 
-def stat(*numbers):
-    '''Usage1: s=stat(1,2,3,4,5...,10)
-        Usage2: s=stat(range(1,21,2))'''
-    return stats.stats(*numbers)
+def stat(*numbers,prec=4,pt=True):
+    '''Anaylyze numbers only.
+        Usage: s=stat(1,2,3,4,5,10,range(1,21,2),prec=2,pt=False)
+        Set precision(prec) to a specific number to round the results.
+        If prec is negative, results will be as precise as possible.
+        Set pt to False for not printing the result automatically.'''
+    return stats.stats(*numbers,precision=prec,point=pt)
     
