@@ -1,30 +1,54 @@
 import ez
+from ezs import ac,product
 import math
 
 class stats:
-    def __init__(self,*numbers):
-        '''Support int and float numbers only.'''
+    def __init__(self,*numbers,precision=4,Print=True):
+        '''Anaylyze numbers only.
+        Usage: s=stat(1,2,3,4,5,10,range(1,21,2),precision=2,Print=False)
+        Set precision to a specific number to round the results.
+        If precision is negative, results will be as precise as possible.
+        Set Print to False for not printing the result automatically.'''
+        self.print=Print
+        self.precision=precision
         self.data=()
         for i in numbers:
             if type(i)==range:
                 self.data+=tuple(i)
             else:
                 self.data+=(i,)
-        try:            
+        try:
             self.calculate()
-            self.round()
+            self.round(self.precision)
         except TypeError:
             raise ez.DataTypeError
-        print('Your input data is:\n{}'.format(self.data))
-        self.show()
+        self.getInfo()
+        if Print:
+            print('Your input data is:\n{}'.format(self.data))
+            print(self.info)
+
+    def __add__(self,other):
+        '''Combine the two data.
+            Precision will be set to the smaller value.
+            Will not print the info if any Print is equal to False.
+            '''
+        return stats(*(self.data+other.data),\
+                     precision=min(self.precision,other.precision),\
+                     Print=self.print*other.print)
+
+    def __str__(self):
+        return self.info
+
+    def __repr__(self):
+        return repr(self.data)
 
     def calculate(self):
-        '''Calculate data.'''
+        '''Calculate various data.'''
         self.num=len(self.data)
         if self.num==1 or self.data==(self.data[0],)*self.num:
             raise Exception('Are you serious???')
         self.sorted=()
-        self.reverse=False
+
         self.sort()
         self.count=ez.find(self.sorted).count()
         self.nodup=ez.rmdup(self.data)
@@ -37,17 +61,21 @@ class stats:
         self.mode=ez.find(self.count).key(max(self.count[k] for k in self.count))
         self.var=sum((data-self.mean)**2 for data in self.data)/self.num
         self.sd=self.var**0.5
-        self.group={}
         self.outlier=None
         self.Outlier()
-        
+
     def sort(self,reverse=False):
-        '''Sort data.'''
+        '''Sort data from the least to the greatest.'''
         self.reverse=reverse
-        self.sorted=sorted(self.data,reverse=self.reverse)
+        self.sorted=sorted(self.data,reverse=reverse)
+
+    def rank(self,number):
+        if number not in self.sorted:
+            return -1
+        return self.sorted.index(number)
 
     def Max(self,nth=1):
-        '''Find the nth largest number.'''
+        '''Find the nth greatest number.'''
         if not self.sorted:
             self.sort()
         if self.reverse:
@@ -65,15 +93,12 @@ class stats:
             self.min=self.sorted[nth-1]
 
     def Mean(self,precision=4):
-        '''Give 5 kinds of mean: Arithmatic Mean, Geometric Mean, Harmonicc Mean, Weighted Arithmatic Mean and Sqaure Mean.'''
+        '''Find Arithmatic Mean, Geometric Mean, Harmonic Mean, Weighted Arithmatic Mean and Square Mean.'''
         self.precision=presicion
         self.AM=sum(self.data)/self.num
         if self.AM==int(self.AM):
             self.AM=int(self.AM)
-        self.GM=1
-        for n in self.data:
-            self.GM*=n
-        self.GM=self,geometric**(1/self.num)
+        self.GM=product(self.data)**(1/self.num)
         self.HM=self.num/sum(1/n for n in self.data)
         self.wAM=sum(k*self.count[k] for k in self.count)/self.num
         self.SM=(sum(n**2 for n in self.data)/n)**0.5
@@ -97,7 +122,7 @@ class stats:
             self.median=(self.sorted[self.num//2-1]+self.sorted[self.num//2])/2
 
     def Outlier(self):
-        '''Outliers: less than Q1-1.5*interquartile or greater than Q3+1.5*interquartile.'''
+        '''Find the numbers that are either less than Q1-1.5*interquartile or greater than Q3+1.5*interquartile.'''
         if self.num>=4:
             mod=self.num%4
             if mod:
@@ -108,9 +133,9 @@ class stats:
                 self.q3=(self.sorted[self.num*3//4-1]+self.sorted[self.num*3//4])/2
             self.interquartile=self.q3-self.q1
             self.outlier=ez.rmdup([ i for i in self.sorted if i<self.q1-1.5*self.interquartile or i>self.q3+1.5*self.interquartile])
-    
+
     def add(self,*numbers):
-        '''Add numbers to self.data.'''
+        '''Add numbers to the data.'''
         if numbers:
             num=len(numbers)
             if num==1:
@@ -126,36 +151,37 @@ class stats:
         '''Round numbers to a specific precision.
             If precision is negative, results will be as precise as possible.'''
         self.precision=precision
-        if precision<0:
-            self.mean=sum(self.data)/self.num
-            self.var=sum( (data-self.mean)**2 for data in self.data)/self.num
-            self.sd=math.sqrt(self.var)
-        else:
+        self.mean=sum(self.data)/self.num
+        self.var=sum( (data-self.mean)**2 for data in self.data)/self.num
+        self.sd=math.sqrt(self.var)
+        if precision>=0:
             self.mean=round(self.mean,precision)
             self.var=round(self.var,precision)
             self.sd=round(self.sd,precision)
 
-    def show(self):
-        '''Print data.'''
-        print('{} numbers in total.'.format(self.num))
-        print('Min: {}'.format(self.min))
-        print('Max: {}'.format(self.max))
-        print('Mean: {}'.format(self.mean))
-        print('Median: {}'.format(self.median))
-        print('Mode: {}'.format(', '.join(str(i) for i in self.mode)))
-        print('Variance: {}'.format(self.var))
-        print('Standard Deviation: {}'.format(self.sd))
+    def getInfo(self):
+        '''Produce info to print.'''
+        self.info='''{} numbers in total.
+Min: {}
+Max: {}
+Mean: {}
+Median: {}
+Mode: {}
+Variance: {}
+Standard Deviation: {}'''.format(self.num,self.min,self.max,self.mean,self.median,\
+                                 ', '.join(str(i) for i in self.mode),self.var,self.sd)
         if self.num>=4:
             if self.outlier:
-                print('Outliers: {}'.format(', '.join(str(i) for i in self.outlier)))
+                self.info+='\nOutliers: {}'.format(', '.join(str(i) for i in self.outlier))
             else:
-                print('No outliers.')
-        if self.group:
-            print(self.group)
+                self.info+='\nNo outliers.'
 
-    def analyze(self,interval=-1):
-        '''Group numbers with interval.'''
-        if interval==-1:
+    def Group(self,interval=0):
+        '''Group numbers with non-negative interval.
+            If interval is 0, numbers will be automatically.
+            Otherwise it will be set to the given interval.'''
+        self.group={}
+        if interval==0:
             maximum=max(abs(i) for i in self.data)
             minimum=min(abs(i) for i in self.data)
             dmax=math.floor(math.log(maximum,10))+1
@@ -165,12 +191,15 @@ class stats:
             dmdiff=dmax-dmin
             diff=maximum-minimum
             ddiff=math.floor((math.log(diff,10)))+1
-            if dmdiff==0:                
+            if dmdiff==0:
+                ## 不够好
                 interval=10**ddiff
                 if ddiff<dmax:
                     self.group=self.count
                     print(self.group)
                     return
+                if ddiff==dmax:
+                    interval//=10
             elif dmdiff==1:
                 interval=10**dmin
             elif dmdiff==2:
@@ -178,6 +207,7 @@ class stats:
                 if ddiff==dmax:
                     interval*=10
             elif dmdiff>=3:
+                ## 没写
                 pass
         mini=self.min//interval*interval
         maxi=(self.max//interval+1)*interval
@@ -190,7 +220,7 @@ class stats:
             mini+=interval
         print(self.group)
 
-    def rm(self,number='out',*nums):
+    def rm(self,*nums,number='out'):
         '''Remove all the occurences of user input.
             Set number to 'out' to remove outliers (Default).
             Set number to min to remove minimum values.
@@ -220,7 +250,8 @@ class stats:
         self.show()
 
     def plot(self,binMin=False, binMax=False, nBins=20, title=''):
-        '''binMin - left most boundary of histogram
+        '''Use cTurtle to plot a histogram.
+        binMin - left most boundary of histogram
         binMax - right most boundary of histogram
         nBins - number of bins to partition data into
         title - string name of histogram'''
@@ -305,6 +336,7 @@ class stats:
             figure.up()
 
         figure.exitOnClick()
-    
+
 ##s=stats(44, 32, 40, 42, 39, 33, 47, 45, 38, 42, 49, 45, 43, 43, 31, 38, 38, 42, 36, 37, 28, 48, 38, 45, 43, 46, 36, 50, 46, 48, 27, 46, 47, 44, 44, 48, 37, 48, 49, 47, 49, 40, 40, 41, 48, 42, 42, 41, 43, 27, 27, 40, 38, 40, 42, 45, 46, 46, 49, 37, 43, 36, 41, 36, 43, 46, 47, 46, 47, 22, 49, 49, 41, 44, 41, 43, 40, 45, 48)
 ##s=stats(50, 42, 57, 36, 0, 54, 56, 50, 36, 45, 42, 49, 45, 54, 44, 47, 62, 54, 57, 40, 36, 43, 52, 39, 29, 0, 56, 40, 49, 52, 38, 48, 48, 46, 39, 35, 59, 47, 51, 55, 49, 56, 43, 53, 49, 53, 59, 44, 53, 28, 56, 57, 55, 45, 40, 55, 38, 48, 43, 43, 36, 42, 40, 42, 42, 48, 41, 46, 41, 36, 47, 56, 39, 48, 59, 53, 58, 54, 44, 44, 64, 58, 53, 61, 45, 37, 52, 49, 46, 59, 30, 44, 50, 35, 55, 51, 44, 52, 0, 49, 39, 39, 47, 45, 50, 47, 59, 47, 23, 46, 34, 52, 33, 42, 36, 32, 51, 27, 44, 43, 52, 49, 55, 51, 43, 46, 45, 57, 53, 57, 52, 33, 56, 54, 57, 52, 33, 32, 23, 52, 44, 54, 59, 41, 54, 43, 39, 59, 21, 53, 40, 45, 52, 62, 50, 41, 49, 49, 57, 32, 46, 49, 48, 50, 53, 41, 52, 44, 46, 38, 47, 45, 36, 35, 46, 49, 42, 50, 33, 54, 51, 60, 58, 46, 44, 28, 34, 64, 51, 58, 39, 37, 51, 50, 37, 44, 36, 26, 56, 53, 33, 41, 44, 34, 34, 34, 54, 36, 41, 35, 48, 28, 34, 51, 41, 53, 35, 59, 46, 44, 52, 56, 51, 59, 47, 37, 49, 52, 52, 53, 34, 53, 41, 47, 52, 44, 0, 31, 39, 0, 51, 54, 49, 48, 44, 53, 0, 50, 50)
+##s=stats(47, 39, 43, 38, 37, 43, 45, 40, 40, 42, 46, 47, 44, 45, 42, 36, 40, 40, 37, 45, 44, 41, 45, 36, 42, 38, 43, 47, 46, 27, 41, 45, 42, 43, 45, 40, 48, 45, 45, 46, 40, 38, 35, 48, 46, 47, 33, 37, 28, 35, 34, 44, 45, 42, 48, 46, 46, 40, 47, 42, 46, 45, 37, 48, 45, 39, 37, 40, 42, 42, 38, 47, 47, 35, 32, 46, 49)
