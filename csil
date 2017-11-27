@@ -3,14 +3,18 @@
 if [ $# -eq 0 ]; then
     ssh seakylone@csil.cs.ucsb.edu
 elif [ $# -eq 1 ]; then
-    if [ $1 -ge 0 ] || [ $1 -le 48 ]; then
+    if [ $1 -ge 1 ] && [ $1 -le 48 ]; then
         number=$1
-        if [ $1 -ne 0$1 ] && [ $1 -lt 10 ]; then
-            number="0$1"
+        if [ "${number:0}" != "0" ] && [ $1 -lt 10 ]; then
+            number=0$1
         fi
         ssh seakylone@csil-$number.cs.ucsb.edu
+    else
+        echo "Server number should be between 1 and 48."
+        exit 1
     fi
 else
     echo "Usage: ./csil 39"
+    exit 2
 fi
 exit 0
