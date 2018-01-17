@@ -1,20 +1,7 @@
 from tkinter import *
+import ez
 
 root=Tk()
-
-def multiple(l1,l2):
-    '''Check whether l1 is the multiple of l2'''
-    if l1==l2:
-        return True
-    length1=len(l1)
-    length2=len(l2)
-    if length1%length2!=0:
-        return False
-    for i in range(0,length1,length2):
-        if l1[i:i+length2]!=l2:
-            return False
-    return True
-
 def overlap(time1,time2):
     if time1==time2:
         return True
@@ -53,22 +40,85 @@ def overlap(time1,time2):
 class coursePlan(Frame):
     def __init__(self,parent):
         Frame.__init__(self,parent)
-        self.weekday=['Mon','Tue','Wed','Thu','Fri']
-        self.time=[(i+7)%12+1 for i in range(12)]
+        self.weekday={'Mon':'m','Tue':'t','Wed':'w','Thu':'r','Fri':'f'}
+        self.time=['{}:{}0'.format((i//2+7)%12+1,[0,3][i%2]) for i in range(24)]
         for i,date in enumerate(self.weekday):
             Label(self,text=date).grid(row=0,column=i+1)
         for i,time in enumerate(self.time):
             Label(self,text=time).grid(row=i+1,column=0)
-        self.setup()
+        self.timeLabel=Label(self,text='Time:')
+        self.timeLabel.grid(row=0,column=6)
+        self.timeEntry=Entry(self)
+        self.timeEntry.grid(row=0,column=7)
+        self.nameLabel=Label(self,text='Name:')
+        self.nameLabel.grid(row=1,column=6)
+        self.nameEntry=Entry(self)
+        self.nameEntry.grid(row=1,column=7)
+        self.locLabel=Label(self,text='Location:')
+        self.locLabel.grid(row=2,column=6)
+        self.locEntry=Entry(self)
+        self.locEntry.grid(row=2,column=7)
+        self.addButton=Button(self,text='Add',command=self.add)
+        self.addButton.grid(row=3,column=6)
+        self.readButton=Button(self,text='Read',command=self.read)
+        self.readButton.grid(row=3,column=7)
+        self.saveButton=Button(self,text='Save',command=self.save)
+        self.saveButton.grid(row=4,column=6)
+        self.clearButton=Button(self,text='Clear',command=self.clear)
+        self.clearButton.grid(row=4,column=7)
+        self.read()
 
     def setup(self):
-        self.course=[]
-        self.courseLabel={(i,j):0 for i in range(1,6) for j in range(1,13)}
-        for i in range(1,13):
-            for j in range(1,6):
-                self.courseLabel[(i,j)]=Label(self)
-                self.courseLabel[(i,j)].grid(row=i,column=j)
+        self.courses=[]
+        self.courseLabel={}
+##        for i,date in enumerate(self.weekday):
+##            for j,time in enumerate(self.time):
+##                self.courseLabel[(date,time)]=Label(self)
+##                self.courseLabel[(date,time)].grid(row=j+1,column=i+1)
 
+    def add(self):
+        time=self.timeEntry.get()
+        name=self.nameEntry.get()
+        loc=self.locEntry.get()
+        if ez.have(self.courses).sub(time):
+            return
+##        self.courses.append((time,name,loc))
+        weekindex=1
+        while time[weekindex].isalpha():
+            weekindex+=1
+        stime=time[weekindex:]
+        if stime.isnumeric():
+            stime='{}:00-{}:50'.format(stime,stime)
+        elif stime.count('-') and stime.count(':')<2:
+            index=stime.find('-')
+            start=stime[:index]
+            if start.count(':')==0:
+                start+=':00'
+            end=stime[index:]
+            if end.count(':')==0:
+                end+=':00'
+            stime=start+end
+        start=stime[:stime.find('-')]
+        for weekday in time[:weekindex]:
+            ez.find(self.weekday).key()
+                       
+    def read(self):
+        return
+        self.setup()
+        self.courses=ez.fread('course.txt')
+
+    def save(self):
+        return
+        file=open('course.txt','w')
+        file.write(repr(self.courses))
+        file.close()
+
+    def clear(self):
+        self.setup()
+        self.timeEntry.delete(0,END)
+        self.nameEntry.delete(0,END)
+        self.locEntry.delete(0,END)
+        
 cp=coursePlan(root)
 cp.pack()
 root.mainloop()
