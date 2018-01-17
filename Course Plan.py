@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 import ez
 
 root=Tk()
@@ -37,36 +38,44 @@ def overlap(time1,time2):
         return False
     return True
 
+def length(t1,t2):
+    '''Time format 12:30'''
+    i1=t1.index(':')
+    h1=eval(t1[:i1])
+    if h1<8:
+        h1+=12
+    time1=h1*60+eval(t1[i1+1:])
+    i2=t2.index(':')
+    h2=eval(t2[:i2])
+    if h2<8:
+        h2+=12
+    time2=h2*60+eval(t2[i2+1:])
+    return abs(time2-time1)
+
 class coursePlan(Frame):
     def __init__(self,parent):
         Frame.__init__(self,parent)
         self.weekday={'Mon':'m','Tue':'t','Wed':'w','Thu':'r','Fri':'f'}
         self.time=['{}:{}0'.format((i//2+7)%12+1,[0,3][i%2]) for i in range(24)]
         for i,date in enumerate(self.weekday):
-            Label(self,text=date).grid(row=0,column=i+1)
+            Label(self,text=date).grid(row=0,column=i+1)  ##needs bg
         for i,time in enumerate(self.time):
-            Label(self,text=time).grid(row=i+1,column=0)
+            Label(self,text=time).grid(row=i+1,column=0)  ##needs bg
         self.timeLabel=Label(self,text='Time:')
-        self.timeLabel.grid(row=0,column=6)
         self.timeBox=Entry(self)
-        self.timeBox.grid(row=0,column=7,columnspan=2)
         self.exampleText='Example: tr12-1:15'
-        self.timeBox.insert(0,self.exampleText)
-        self.timeBox.configure(fg='grey')
-        self.timeBox.bind('<KeyRelease>',self.switch)
         self.timeBox.bind('<FocusIn>',self.focusIn)
         self.timeBox.bind('<FocusOut>',self.focusOut)
+        self.focusOut('<FocusOut>')
         self.nameLabel=Label(self,text='Name:')
-        self.nameLabel.grid(row=1,column=6)
         self.nameBox=Entry(self)
-        self.nameBox.grid(row=1,column=7,columnspan=2)
-        self.nameBox.bind('<KeyRelease>',self.switch)
         self.locLabel=Label(self,text='Location:')
-        self.locLabel.grid(row=2,column=6)
         self.locBox=Entry(self)
-        self.locBox.grid(row=2,column=7,columnspan=2)
-        self.locBox.bind('<KeyRelease>',self.switch)
         self.boxList=[self.timeBox,self.nameBox,self.locBox]
+        for i,(box,label) in enumerate(zip(self.boxList,[self.timeLabel,self.nameLabel,self.locLabel])):
+            label.grid(row=i,column=6)
+            box.grid(row=i,column=7,columnspan=2)
+            box.bind('<KeyRelease>',self.switch)
         self.addButton=Button(self,text='Add',command=self.add)
         self.addButton.grid(row=3,column=6)
         self.readButton=Button(self,text='Read',command=self.read)
@@ -82,14 +91,16 @@ class coursePlan(Frame):
         self.read()
 
     def setup(self):
-        self.courses={}
+        self.courses=[]
+        self.courseLabels=[]
         self.courseList=[]
-        self.colorList=['SystemButtonFace','pink','orange','yellow','light green','cyan','azure','violet','magenta']
+        self.colorList=['white','pink','orange','yellow','light green','cyan','azure','violet','magenta']
         self.nameBox.focus()
 
     def putLabel(self,datetime,name,loc,mode=0):
         datetime=datetime.lower()
         courseLabel=Label(self,text=name+[' --- ',''][loc==None]+loc)
+        index=-1
         if mode==0:
             rowNum=len(self.courseList)+6
             courseLabel.grid(row=rowNum,column=6)
@@ -100,10 +111,16 @@ class coursePlan(Frame):
             dropButton.grid(row=rowNum,column=8)
             dropButton.configure(command=lambda button=dropButton:self.drop(button))
             self.courseList.append((courseLabel,modifyButton,dropButton))
+            self.courses.append((datetime,name,loc))
+            self.courseLabels.append([])
         else:
-            courseLabel.grid(row=list(self.courses.keys()).index(mode)+6,column=6)
-            del self.courses[mode]
-        self.courses[(datetime,name,loc)]=[]
+            index=self.courses.index(mode)
+            self.courseList[index][0].grid_forget()
+            courseLabel.grid(row=index+6,column=6)
+            self.courses[index]=(datetime,name,loc)
+            for label in self.courseLabels[index]:
+                label.grid_forget()
+            self.courseLabels[index]=[]
 
         weekindex=1
         while datetime[weekindex].isalpha():
@@ -112,22 +129,28 @@ class coursePlan(Frame):
         if time.isnumeric():
             time='{}:00-{}:50'.format(time,time)
         elif time.count('-') and time.count(':')<2:
-            index=time.find('-')
-            start=time[:index]
+            dash=time.find('-')
+            start=time[:dash]
             if start.count(':')==0:
                 start+=':00'
-            end=time[index:]
+            end=time[dash:]
             if end.count(':')==0:
                 end+=':00'
             time=start+end
-        index=time.find('-')
-        start=time[:index]
-        end=time[index+1:]
+        dash=time.find('-')
+        start=time[:dash]
+        end=time[dash+1:]
+        grids=length(start,end)//30+1
         for weekday in datetime[:weekindex]:
             day=ez.find(self.weekday).key(weekday)[0]
-            label=Label(self,text=name)
-            self.courses[(datetime,name,loc)].append(label)
-            label.grid(row=self.time.index(start)+1,column=list(self.weekday.keys()).index(day)+1)
+            beginRow=self.time.index(start)+1
+            col=list(self.weekday.keys()).index(day)+1
+            maxlen=max(len(name),len(loc))
+            courseInfo=[('{:'+str(maxlen)+'}').format(name),('{:'+str(maxlen)+'}').format(loc)]+[' '*maxlen for i in range(grids-2)]
+            for i in range(grids):
+                label=Label(self,text=courseInfo[i],bg=self.colorList[0])
+                self.courseLabels[index].append(label) 
+                label.grid(row=beginRow+i,column=col)
 
     def add(self,mode=0):
         datetime=self.timeBox.get()
@@ -135,29 +158,34 @@ class coursePlan(Frame):
         loc=self.locBox.get()
         if datetime in ('',self.exampleText) or (datetime,name,loc) in self.courses:
             return
+        if name=='':
+            messagebox.showinfo('Error','Please input course name!')
+            return
         self.putLabel(datetime,name,loc,mode)
         self.clearBox()
 
     def read(self):
         self.setup()
-        content=ez.fread('settings.txt')
+        self.clearBox()
+        content={}
+        try:
+            content=ez.fread('settings.txt')
+        except FileNotFoundError:
+            ez.fwrite('settings.txt',content)
         if content=={}:
             return
-        for datetime,name,loc in content['course']:
-            self.putLabel(datetime,name,loc)
         index=self.colorList.index(content['color'])
         self.colorList=self.colorList[index:]+self.colorList[:index]
-
+        for datetime,name,loc in content['courses']:
+            self.putLabel(datetime,name,loc)
+        
     def save(self):
-        file=open('settings.txt','w')
-        content={'courses':list(self.courses.keys()),'color':self.colorList[0]}
-        file.write(repr(content))
-        file.close()
+        content={'courses':self.courses,'color':self.colorList[0]}
+        ez.fwrite('settings.txt',content)
 
     def clear(self):
-        for key in self.courses:
-            for label in self.courses[key]:
-                label.grid_forget()
+        for abel in self.courseLabels:
+            label.grid_forget()
         for courseLabel,modifyButton,dropButton in self.courseList:
             courseLabel.grid_forget()
             modifyButton.grid_forget()
@@ -166,44 +194,45 @@ class coursePlan(Frame):
         self.setup()
 
     def clearBox(self):
-        self.timeBox.delete(0,END)
+        if self.timeBox.get()!=self.exampleText:
+            self.timeBox.delete(0,END)
+            self.focusOut('<FocusOut>')
         self.nameBox.delete(0,END)
         self.locBox.delete(0,END)
         self.nameBox.focus()
 
     def modify(self,button):
-        index=button.grid_info()['row']-6
-        data=datetime,name,loc=list(self.courses.keys())[index]
-        if data==(self.timeBox.get(),self.nameBox.get(),self.locBox.get()):
+        index=eval(button.grid_info()['row'])-6
+        data=datetime,name,loc=self.courses[index]
+        if (self.timeBox.get(),self.nameBox.get(),self.locBox.get())==data:
             self.clearBox()
             button.configure(text='Modify')
         else:
             self.clearBox()
+            self.focusIn('<FocusIn>')
             self.timeBox.insert(0,datetime)
             self.nameBox.insert(0,name)
             self.locBox.insert(0,loc)
-            self.addButton.configure(command=lambda :self.modifyMode(data))
-            button.configure(text='Cancel')
+            self.addButton.configure(command=lambda :self.modifyMode(button,data))
+            button['text']='Cancel'
 
-    def modifyMode(self,data):
+    def modifyMode(self,button,data):
         self.add(data)
         self.addButton.configure(command=self.add)
+        button['text']='Modify'
 
     def drop(self,button):
-        index=button.grid_info()['row']-6
-        for i,key in enumerate(self.courses.copy()):
-            if i==index:
-                for label in self.courses[key]:
-                    label.grid_forget()
-                del self.courses[key]
-                break
+        index=eval(button.grid_info()['row'])-6
+        for label in self.courseLabels[index]:
+            label.grid_forget()
+        self.courseLabels.pop(index)
+        self.courses.pop(index)
         courseLabel,modifyButton,dropButton=self.courseList.pop(index)
         courseLabel.grid_forget()
         modifyButton.grid_forget()
         dropButton.grid_forget()
-        for i,t in enumerate(self.courseList[index:]):
+        for i,(courseLabel,modifyButton,dropButton) in enumerate(self.courseList[index:]):
             rowNum=i+index+6
-            courseLabel,modifyButton,dropButton=t
             courseLabel.grid_forget()
             courseLabel.grid(row=rowNum,column=6)
             modifyButton.grid_forget()
@@ -222,13 +251,13 @@ class coursePlan(Frame):
 
     def switchColor(self):
         self.colorList=self.colorList[1:]+[self.colorList[0]]
-        for key in self.courses:
-            for label in self.courses[key]:
-                label.configure(bg=self.colorList[0])
+        for label in self.courseLabels:
+            label.configure(bg=self.colorList[0])
 
     def focusIn(self,event):
         if self.timeBox.get()==self.exampleText:
             self.timeBox.delete(0,END)
+            self.timeBox.configure(fg='black')
 
     def focusOut(self,event):
         if self.timeBox.get()=='':
@@ -238,4 +267,3 @@ class coursePlan(Frame):
 cp=coursePlan(root)
 cp.pack()
 root.mainloop()
-
