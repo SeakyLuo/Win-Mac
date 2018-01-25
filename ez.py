@@ -7,29 +7,73 @@ import time
 desktop='C:\\Users\\Seaky\\Desktop\\'
 DataTypeError=Exception('This data type is not supported!')
 
-def timeused(func,iteration=1000,*args):
+def getText(text):
+    return text.get(1.0,'end').strip() 
+
+def checkfolders(folder1,folder2):
+    '''Check whether folder1 is exactly the same as folder2'''
+    l1=os.listdir(folder1)
+    l2=os.listdir(folder2)
+    if l1!=l2:
+        return False
+    for f in l1:
+        p1=os.path.join(folder1,f)
+        if os.path.isdir(p1):
+            p2=os.path.join(folder2,f)
+            if not checkfolders(p1,p2):
+                return False
+    return True
+
+def findFilePath(filename,path=''):
+    '''Default path: All
+        Find the first occurence only.
+        Use smaller range to have faster searching speed.'''
+    if path=='':
+        c=findPathFile(filename,'C:\\')
+        if c:
+            return c
+        d=findPathFile(filename,'D:\\')
+        if d:
+            return d
+        return False
+    path=os.path.normcase(path)
+    try:
+        filelist=os.listdir(path)
+    except PermissionError:
+        return
+    if filename in filelist:
+        return path
+    for f in filelist:
+        p=os.path.join(path,f)
+        if os.path.isdir(p):
+            result=findFilePath(filename,p)
+            if result:
+                return result
+    return False
+
+def timer(func,iterations=1000,*args):
     '''If func has arguments, put them into args.'''
     t=time.time()
-    for i in range(iteration):
+    for i in range(int(iterations)):
         func(*args)
     return time.time()-t
 
-def fread(filename,coding='utf8'):
-    '''Read a file.
-        Requires filename.
+def fread(filename,evaluate=True,coding='utf8'):
+    '''Read the file that has the filename.
+        Set evaluate to true to evaluate the content.
         Default coding: utf8.'''
     file=open(filename,encoding=coding)
     content=file.read()
-    try:
-        content=eval(content)
-    except:
-        pass
+    if evaluate:
+        try:
+            content=eval(content)
+        except:
+            pass
     file.close()
     return content
 
 def fwrite(filename,content,mode='w',coding='utf8'):
-    ''' Write a file.
-        Requires filename and content.
+    ''' Write the file that has the filename with content.
         Default mode: "w"
         Default coding: utf8.'''
     file=open(filename,mode,encoding=coding)
@@ -65,8 +109,9 @@ def advancedSplit(obj,*sep):
 ##abbreviation
 asplit=advancedSplit
 
-def similar(obj1,obj2):
-    '''Check the similarity of two strings.'''
+def similar(obj1,obj2,capital=True):
+    '''Check the similarity of two strings.
+        Set capital to False to ignore capital.'''
     def grade(o1,o2):
         ## Let o1>=o2
         if o1==o2:
@@ -77,7 +122,8 @@ def similar(obj1,obj2):
         len_o2=len(o2)
         score=len_o2/len_o1
         if score==1:
-            return eval(format(sum([o1[i]==o2[i] for i in range(len_o1) ])/len_o1,'.4f'))
+            result=sum((i==j)+(i!=j)*(i.lower()==j.lower())*0.9 for i,j in zip(o1,o2))/len_o1
+            return eval(format(result,'.4f'))
         if len_o2<=15 and score>0.6:
             ps=list(reversed(find(o2).power_set()+[o2]))
             maxLen=0
@@ -120,6 +166,9 @@ def similar(obj1,obj2):
 
     if type(obj1)!=str or type(obj2)!=str:
         raise DataTypeError
+    if not capital:
+        obj1=obj1.lower()
+        obj2=obj2.lower()
     if len(obj1)>=len(obj2):
         return grade(obj1,obj2)
     else:
@@ -135,6 +184,8 @@ class have:
         self.support=[str,list,dict,frozenset,set,tuple]
         self.obj=obj
         self.type=type(obj)
+        self.empty=self.obj.__new__(self.type)
+        self.empty.__init__()
         if self.type not in self.support:
              raise DataTypeError
 
@@ -145,9 +196,7 @@ class have:
             if len(contain)==1:
                 return contain[0]
             return contain
-        empty=self.obj
-        empty=empty.__new__(type(empty))
-        return empty
+        return self.empty
 
     def all(self,*args):
         '''Check whether obj contains any element of the args.'''
@@ -168,9 +217,9 @@ class have:
         return False
 
     def sub(self,element):
-        '''Check whether elements are in the subset of obj.'''
+        '''Check whether the element is in the subset of obj.'''
         if self.type==str:
-            raise dataTypeError
+            raise DataTypeError
         for sub in self.obj:
             if element in sub:
                 return True
@@ -227,6 +276,15 @@ class find:
             self.type=str
         else:
             self.obj=obj
+        self.empty=self.obj.__new__(self.type)
+            
+    def after(self,occurrence):
+        '''Return the obj after the occurrence.'''
+        if self.type==str:
+            return self.obj[self.obj.index(occurrence)+len(occurrence):]
+        elif self.type in [list,tuple]:
+            return self.obj[self.obj.index(occurrence)+1:]
+        raise DataTypeError
 
     def all(self,occurrence):
         '''Find all the occuring positions in an obj.'''
@@ -257,25 +315,9 @@ class find:
                         return idx
         raise DataTypeError
 
-    def last(self,occurrence):
-        '''Find the last occuring position in an obj.'''
-        if occurrence not in self.obj:
-            return -1
-        index=self.obj.index(occurrence)
-        if self.type==str:
-            for idx in range(len(self.obj)-1,index,-1):
-                if self.obj[idx:idx+len(occurrence)]==occurrence:
-                    index=idx
-                    break
-        elif self.type in [list,tuple]:
-            for idx in range(len(self.obj)-1,index,-1):
-                if self.obj[idx:]==occurrence:
-                    index=idx
-                    break
-        return index
-
-    def between(self,obj1='',obj2=''):
-        '''Return the obj between obj1 and obj2 (first occurrence only),both of which are not included.'''
+    def between(self,obj1=None,obj2=None):
+        '''Return the obj between obj1 and obj2 (not included).
+            First occurrence only.'''
         if self.type not in [str,list,tuple]:
             raise DataTypeError
         try:
@@ -289,7 +331,7 @@ class find:
                 index2=None
             return self.obj[index1+len(obj1):index2]
         except ValueError:
-            return self.obj.__init__()
+            return self.empty
 
     def count(self):
         '''Count the occurrences of each element and return a dict.'''
@@ -318,11 +360,32 @@ class find:
                     streak=1
         return maxStreak
 
+    def distance(self,obj1=None,obj2=None):
+        '''Find the distance between obj1 and obj2.'''
+        return len(self.between(obj1,obj2))
+
     def key(self,value):
         '''Find all the keys that have the value.'''
         if self.type!=dict:
             raise DataTypeError
         return tuple(k for k in self.obj if self.obj[k]==value)
+
+    def last(self,occurrence):
+        '''Find the last occuring position in an obj.'''
+        if occurrence not in self.obj:
+            return -1
+        index=self.obj.index(occurrence)
+        if self.type==str:
+            for idx in range(len(self.obj)-1,index,-1):
+                if self.obj[idx:idx+len(occurrence)]==occurrence:
+                    index=idx
+                    break
+        elif self.type in [list,tuple]:
+            for idx in range(len(self.obj)-1,index,-1):
+                if self.obj[idx:]==occurrence:
+                    index=idx
+                    break
+        return index
 
     def power_set(self):
         '''Find all the subs of obj except the empty sub and itself.
@@ -330,14 +393,13 @@ class find:
         length=len(self.obj)
         return [self.obj[j:j+i] for i in range(1,length) for j in range(length+1-i)]
 
-
-def start_with(string,occurrence):
+def startwith(string,occurrence):
     '''Check whether the string starts with occurrence.'''
     if len(string)>=len(occurrence):
         return string[:len(occurrence)]==occurrence
     return False
 
-def end_with(string,occurrence):
+def endwith(string,occurrence):
     '''Check whether the string ends with occurrence.'''
     if len(string)>=len(occurrence):
         return string[-len(occurrence):]==occurrence
@@ -386,7 +448,7 @@ def delta_days(day1,day2):
 
 def substitute(obj,*args):
     '''Support data type: str, tuple, list, set.
-        Usage: substitute([1,2,3,4],1,2,2,3) // Returns [3,3,3,4].
+        Usage: substitute([1,2,3,4],1,2,2,3) // Returns [3,3,3,4]
         Abbreviation:sub'''
     num=len(args)
     if num==0:

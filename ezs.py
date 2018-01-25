@@ -6,18 +6,23 @@ from decimal import Decimal
 def product(*numbers):
     return ac('*'.join(str(i) for i in numbers))
 
-def accurateCalculation(formula=''):
+def accurateCalculation(formula='',sn=False):
     '''Function calls not supported.
+        Set sn to True to use scientific notation.
         Abbreviation: ac'''
     def get_result():
         ni='' ## new i
-        nf=formula.replace('^','**').lower() ## new formula
+        try:
+            nf=formula.replace('^','**').lower() ## new formula
+        except AttributeError:
+            raise Exception('Input formula should be a string.')
         num=''
         try:
             for i,ch in enumerate(nf):
                 if ch.isnumeric() or \
                    (ch=='-' and (i==0 or nf[i-1]=='e')) or \
-                   (ch=='e' and (nf[i+1].isnumeric() or nf[i+1]=='-')) or \
+                   (ch=='+' and (i==0 or nf[i-1]=='e')) or \
+                   (ch=='e' and (nf[i+1].isnumeric() or nf[i+1] in ['+','-'])) or \
                    (ch=='.' and nf[i+1].isnumeric()):
                     num+=ch
                 elif ch==' ':
@@ -31,30 +36,39 @@ def accurateCalculation(formula=''):
                 ni+='Decimal("{}")'.format(num)
         except:
             raise Exception('Invalid expression: '+num)
-        result=eval(ni)
-        return eval(repr(result)[9:-2])
-##        if ez.find(repr(result)).between('Decimal("','")'):
-##            return eval(repr(result)[9:-2])
-##        else:
-##            return result
-        
+        result=eval(repr(eval(ni))[9:-2])
+        return result
+
     if formula:
-        return get_result()
+        result=get_result()
+        if sn:
+            result=scin(result,0)
+        return result
     while True:
         formula=input('Input the formula below. Empty input will exit.\n>>> ')
         if formula=='':
             return
-        print(get_result())
-        
+        if ez.startwith(formula,'sn='):
+            sn=eval(formula[3:])
+            continue
+        result=get_result()
+        if sn:
+            result=scin(result,0)
+        print(result)
+
 ##abbreviation
 ac=accurateCalculation
-    
+
 def intToList(integer):
     return [ integer//10**i%10 for i in range(len(str(integer))) ]
 
-def scientificNotation(num):
+def scientificNotation(num,pr=True):
     '''Abbreviation: scin'''
-    print('%e'%num)
+    result='%e'%num
+    if pr:
+        print(result)
+    else:
+        return result
 
 ##abbreviation
 scin=scientificNotation
@@ -77,86 +91,86 @@ def nmb(n,m): ## nmb does not mean nimabi
     recursive(n,m,methodlst)
     print(methodlst,len(methodlst),sep='\n')
 
-def arrange(n):
-    def recursive(n,lst,m=0,method=[]):
-        if m<n:
-            for i in range(1,n+1):
-                if str(i) not in method:
-                    recursive(n,lst,m+1,method+[str(i)])
-        elif m==n:
-            lst.append('-'.join(method))
-
-    methodlst=[]
-    recursive(n,methodlst)
-    print(methodlst,factorial(n),sep='\n')
-
-def congruence_equation(a,b,m):
-    ''' solve ax≡b(mod m)'''
+def congruenceEquation(a,b,m):
+    ''' Find the least x which satisfies ax≡b(mod m).
+        Abbreviation: cE.'''
     for i in range(m):
         if (a*i)%m==b:
             return i
 
+##abbreviation
+cE=congruenceEquation
+
 def chineseRemainderTheorem():
-    number=-1
+    '''Find solutions to the system of congruences by typing the a,b,m of ax≡b(mod m).
+        If a is 1, only b and m are needed.
+        Abbrevation: crt.'''
+    number=()
     divisor_dict={}
-    print('Find solutions to system of congruences by entering the a,b,m of ax≡b(mod m). If a is 1, you only need to type b and m.')
+    print('Type the a,b,m of ax≡b(mod m). If a is 1, only b and m are needed.')
     while True:
-        s=input('Please seperate a,b,m by a space. Press Enter to stop.\n>>> ')
-        if s!='' and s.find(' ')==-1:
+        s=input('Please seperate a,b,m or b,m by space. Order matters. Press Enter to stop.\n>>> ')
+        if s and s.find(' ')==-1:
             print('No space detected! Please type again! Correct form: >>> 7 3 15')
             continue
         elif s=='':
             break
-        dr=s.split(' ')
-        ## dr[0] is divisor, dr[1] is remainder or
+        dr=s.split()
+        ## x≡dr[0](mod dr[1]) or
         ## dr[0]*x≡dr[1](mod dr[2])
         try:
             dr[0]=int(dr[0])
             dr[1]=int(dr[1])
             if len(dr)==3:
                 dr[2]=int(dr[2])
-                dr[1]=congruence_equation(dr[0],dr[1],dr[2])
-                dr[0],dr[2]=dr[2],dr[0]
+                dr[0]=congruenceEquation(dr[0],dr[1],dr[2])
+                dr[1],dr[2]=dr[2],dr[1]
         except:
             print('Invalid input! Please try again!')
             continue
-        if dr[0]<0:
+        if dr[1]<=0:
             print('Positive divisor only! Please try again!')
             continue
-        elif dr[0] in divisor_dict and divisor_dict[dr[0]]!=dr[1]:
+        elif dr[1] in divisor_dict and divisor_dict[dr[0]]!=dr[1]:
             print('Inconsistent remainder! Please try again!')
             continue
-        elif dr[1]<0 or dr[1]>dr[0]:
+        elif dr[0]<0 or dr[0]>dr[1]:
             print('Remainder automatically adjusted.')
-            dr[1]=dr[1]%dr[0]
-        divisor_dict[dr[0]]=[dr[1]]
-        if number==-1:
-            number=(dr[0],dr[1])
+            dr[0]=dr[0]%dr[1]
+        divisor_dict[dr[1]]=[dr[0]]
+        if number==():
+            number=(dr[1],dr[0])
         else:
-            divisor=number[0]
-            remainder=number[1]
-            dr[1]=(dr[1]-remainder)%dr[0]
-            for i in range(dr[0]):
-                if (divisor*i)%dr[0]==dr[1]:
-                    number=(lcm(divisor,dr[0]),remainder+i*divisor)
+            divisor,remainder=number
+            dr[0]=(dr[0]-remainder)%dr[1]
+            for i in range(dr[1]):
+                if (divisor*i)%dr[1]==dr[0]:
+                    number=(lcm(divisor,dr[1]),remainder+i*divisor)
                     break
             else:
-                yn=input('Such an number does not exist! Is it a typo? (y/n)\n>>> ')
-                if yn.lower()=='y':
-                    del divisor_dict[dr[0]]
+                yn=input('Such number doesn\'t exist! Did you just make a typo?\nInput "y" for yes to delete the previous input, "r" to restart. Other input will be regarded as no.\n>>> ').lower()
+                if yn=='y':
+                    del divisor_dict[dr[1]]
+                    continue
+                elif yn=='r':
+                    divisor_dict={}
                     continue
                 else:
                     ## do something?
                     return
 
-    num=number[0]
-    formula=str(number[0])+'x'
+    if number==():
+        return
+    n0,n1=number
+    formula='x'
+    if n0!=1:
+        formula=str(n0)+'x'
     natural_num='positive integer'
-    if number[1]:
-        formula+='+'+str(number[1])
-        num=number[1]
+    if n1 and n0!=n1:
+        formula+='+'+str(n1)
+        n0=n1
         natural_num='natural number'
-    print('The least satisfying postive number is {}.'.format(num))
+    print('The least satisfying postive integer is {}.'.format(n0))
     print('All the satifying numbers are in the form: {}, where x is any {}.'.format(formula,natural_num))
 
 ##abbreviation
@@ -367,13 +381,56 @@ def truth_table(formula,output='a'):
     infile.write(file_content)
     infile.close()
 
-def permuatation(n,m):
+integer=lambda x:[x,int(x)][x==int(x)]
+
+def get24(a,b,c,d):
+    if not 0<a<10 or not 0<b<10 or not 0<c<10 or not 0<d<10:
+        print('Numbers should be greater than 0 and less than 10.')
+        return
+    operators=['+','-','*','/']
+    jiajian=['+','-']
+    chengchu=['*','/']
+    for p in permutations(str(a),str(b),str(c),str(d)):
+        for o1 in operators:
+            for o2 in operators:
+                for o3 in operators:
+                    calculations=['{}{}{}{}{}{}{}'.format(p[0],o1,p[1],o2,p[2],o3,p[3]),\
+                                  '({}{}{}){}{}{}{}'.format(p[0],o1,p[1],o2,p[2],o3,p[3]),\
+                                  '{}{}{}{}({}{}{})'.format(p[0],o1,p[1],o2,p[2],o3,p[3]),\
+                                  '({}{}{}{}{}){}{}'.format(p[0],o1,p[1],o2,p[2],o3,p[3]),\
+                                  '({}{}{}){}({}{}{})'.format(p[0],o1,p[1],o2,p[2],o3,p[3]),\
+                                   '(({}{}{}){}{}){}{}'.format(p[0],o1,p[1],o2,p[2],o3,p[3])]
+                    for c in calculations:
+                        try:
+                            if eval(c)==24:
+                                print(c)
+                                break
+                        except ZeroDivisionError:
+                            pass
+
+def permutation(n,m):
     '''factorial(n)/factorial(n-m)
         n!/(n-m)!'''
     return factorial(n)//factorial(n-m)
 
 ##abbreviation
-a=permuatation
+a=permutation
+
+def permutations(*args):
+    methods=[]
+    length=len(args)
+    def recursive(p=()):
+        if len(p)==length and p not in methods:
+            methods.append(p)
+            return
+        lst=list(args)
+        for i in p:
+            lst.remove(i)
+        for arg in lst:
+            recursive(p+(arg,))
+
+    recursive()
+    return methods
 
 def combination(n,m):
     ''' n choose m
@@ -391,6 +448,21 @@ def combination(n,m):
 
 ##abbreviation
 c=combination
+
+def npickm(n,m):
+    '''n cannot have duplicates.'''
+    methods=[]
+    def recursive(method=set()):
+        for item in n:
+            if item not in method:
+                recursive(method.union({item}))
+            if len(method)==m:
+                if method not in methods:
+                    methods.append(method)
+                return
+
+    recursive()
+    return methods
 
 def fraction(n,m):
     '''Reduce n/m'''
@@ -423,7 +495,7 @@ def fraction(n,m):
                 new_m//=i
         if new_n!=n:
             output+='={}{}/{}'.format(negative,new_n,new_m)
-    quotient=n/m
+    quotient=ac(repr(n/m))
     if quotient==int(quotient):
         quotient=int(quotient)
         output+='='
@@ -708,7 +780,7 @@ def mf(r=0,c=0,rg=None,f='',var='',pr='p'):
                     step=-abs(newLst[2])
                 else:
                     step=newLst[2]
-                numlst=[repr(i) for i in range(startNum,endNum+1,step)]                
+                numlst=[repr(i) for i in range(startNum,endNum+1,step)]
             else:
                 print('The numbers you want do not match the number of entries in the matrix!.Please type in the correct number of numbers!\n')
                 mf()
@@ -762,7 +834,7 @@ def matrixConvert(form='',matrix=''):
         matrixConvert()
     while True:
         if form:
-            inputForm=form            
+            inputForm=form
         else:
             inputForm=input('Please type in the form that you want. \'l\' represents LaTeX form,\'w\' represents WolframAlpha form, \'b\' represents beautified matrix form and \'s\' represents string matrix form.\n>>> ').lower()
         if inputForm.lower() not in formLst:
@@ -858,7 +930,7 @@ def matrixConvert(form='',matrix=''):
 ##abbreviation
 mc=matrixConvert
 
-def matrixRandom(row=0,column=0,randRange=None,form='',printOrReturn='y'):    
+def matrixRandom(row=0,column=0,randRange=None,form='',printOrReturn='y'):
     if randRange and type(rg) not in [tuple,list]:
         print ('Please type in a tuple or a list as range!\n')
         matrixRandom()
@@ -878,7 +950,7 @@ def matrixRandom(row=0,column=0,randRange=None,form='',printOrReturn='y'):
         endNum=0
         step=1
         numlst=[]
-        if len(newLst)==2:            
+        if len(newLst)==2:
             startNum=newLst[0]
             endNum=newLst[1]
             if startNum>endNum:
@@ -1107,7 +1179,7 @@ def boldedRLaTeX(n=0):
     else:
         n=input('How many dimensions would you like?\n>>> ')
         if n:
-            print('$$\mathbb{R}^'+n+'$$')            
+            print('$$\mathbb{R}^'+n+'$$')
         else:
             print('$$\mathbb{R}$$')
 
