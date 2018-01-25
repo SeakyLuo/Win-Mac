@@ -28,23 +28,22 @@ def length(t1,t2):
 class coursePlan(Frame):
     def __init__(self,master):
         Frame.__init__(self,master)
-        self.bgcolor='mint cream' ## SystemButtonFace
+        self.bgcolor='mint cream'
         self['bg']=self.bgcolor
         self.buttonColor='SeaGreen1'
         self.labelWidth=18
         self.buttonWidth=6
-        self.widgetHeight=1
-        Label(self,text='Time',relief=FLAT,bg=self.bgcolor,\
-                  width=self.buttonWidth,height=self.widgetHeight).grid(row=0,column=0,sticky=N+S+W+E)
+        Label(self,text='Time',relief=FLAT,bg='#00ffff',\
+                  width=self.buttonWidth,height=1).grid(row=0,column=0,sticky=NSEW)
         self.aweekday=['m','t','w','r','f']
         self.weekday=['Mon','Tue','Wed','Thu','Fri']
         self.time=['{}:{}0'.format((i//2+7)%12+1,[0,3][i%2]) for i in range(24)]
         for i,date in enumerate(self.weekday):
             Label(self,text=date,relief=FLAT,bg='#00{}ff'.format(hex(250-i*25)[2:]),\
-                  width=self.labelWidth,height=self.widgetHeight).grid(row=0,column=i+1,sticky=N+S+W+E)
+                  width=self.labelWidth,height=1).grid(row=0,column=i+1,sticky=NSEW)
         for i,time in enumerate(self.time):
             Label(self,text=time,relief=FLAT,bg='#00{}ff'.format(hex(250-i*5)[2:]),\
-                  width=self.buttonWidth,height=self.widgetHeight).grid(row=i+1,column=0,sticky=N+S+W+E)
+                  width=self.buttonWidth,height=1).grid(row=i+1,column=0,sticky=NSEW)
         self.timeLabel=Label(self,text='Time:')
         self.timeBox=Entry(self)
         self.exampleText='Example: tr12-1:15'
@@ -56,18 +55,18 @@ class coursePlan(Frame):
         self.locBox=Entry(self)
         self.boxList=[self.timeBox,self.nameBox,self.locBox]
         for i,(box,label) in enumerate(zip(self.boxList,[self.timeLabel,self.nameLabel,self.locLabel])):
-            label.configure(bg='lavender',\
-                            borderwidth=0,\
+            label.configure(anchor='n',\
+                            bg='lavender',\
+                            bd=0,\
+                            height=1,\
                             width=self.labelWidth//2,\
-                            height=self.widgetHeight,\
                             relief=FLAT)
-            label.grid(row=i,column=6,sticky=N+S+W+E)
+            label.grid(row=i,column=6,sticky=NSEW)
             box.configure(bg='lavender',\
-                           borderwidth=0,\
+                           bd=0,\
                            width=3*self.labelWidth//2,\
-##                           height=self.widgetHeight,\
                            relief=FLAT)
-            box.grid(row=i,column=7,columnspan=2,sticky=N+S+W+E)
+            box.grid(row=i,column=7,columnspan=2,sticky=NSEW)
             box.bind('<KeyRelease>',self.switch)
         self.setup()
         self.addButton=Button(self,text='Add',command=self.add)
@@ -75,21 +74,21 @@ class coursePlan(Frame):
         self.readButton=Button(self,text='Read',command=self.read)
         self.saveButton=Button(self,text='Save',command=self.save)
         self.colorButton=Button(self,text='Color',command=self.switchColor)
-        self.lastButton=Button(self,text='',commamnd=None)
-        buttonList=[self.addButton,self.clearButton,self.readButton,self.saveButton,self.colorButton,self.lastButton]
+        self.fontButton=Button(self,text='Font',command=self.switchFont)
+        buttonList=[self.addButton,self.clearButton,self.readButton,self.saveButton,self.colorButton,self.fontButton]
         for i,button in enumerate(buttonList):
             self.configureButton(button)
-            button.grid(row=i//2,column=9+i%2,sticky=N+S+W+E)
+            button.grid(row=i//2,column=9+i%2,sticky=NSEW)
         Label(self,text='Course List',relief=FLAT,bg='DeepSkyBlue',\
-              borderwidth=0,width=2*self.labelWidth,height=self.widgetHeight).grid(row=3,column=6,columnspan=3,sticky=N+S+W+E)
+              bd=0,width=2*self.labelWidth,height=1).grid(row=3,column=6,columnspan=3,sticky=NSEW)
         self.read()
 
     def setup(self):
         self.courses=[]
         self.courseLabels=[]
         self.courseList=[]
-        self.colorList=['aquamarine', 'gold', 'IndianRed1', 'khaki', 'misty rose', 'OliveDrab1', 'orchid1', 'salmon', 'sky blue', 'spring green', 'thistle', 'tan1', 'thistle']
-
+        self.colorList=['Aquamarine', 'Gold', 'IndianRed1', 'Khaki', 'MistyRose','Moccasin', 'OliveDrab1', 'Orchid1','PeachPuff', 'Salmon', 'SkyBlue', 'SpringGreen', 'Thistle', 'Tan1', 'Thistle']
+        self.fontList=['Arial', 'Calibri', 'Cambria', 'Century', 'Corbel', 'Courier', 'Georgia','Century', 'Helvetica', 'Impact', 'STENCIL', 'Times', 'TkDefaultFont', 'Verdana']
         self.nameBox.focus()
         self.focusOut('<FocusOut>')
         self.exception=False
@@ -98,15 +97,13 @@ class coursePlan(Frame):
         def weekIndex(datetime):
             weekindex=0
             while datetime[weekindex].isalpha():
-                if datetime[weekindex] not in self.aweekday:
-                    raise SyntaxError
+                if datetime[weekindex] not in self.aweekday: raise SyntaxError
                 weekindex+=1
             return weekindex
         datetime=datetime.lower()
         try:
             weekindex=weekIndex(datetime)
-            if weekindex==0:
-                raise SyntaxError
+            if weekindex==0: raise SyntaxError
             time=datetime[weekindex:]
             if time.isnumeric():
                 time='{}:00-{}:50'.format(time,time)
@@ -131,14 +128,13 @@ class coursePlan(Frame):
                 weekindex2=weekIndex(t2)
                 if any(weekday in datetime[:weekindex] for weekday in t2[:weekindex2]) and \
                    overlap(time,t2[weekindex2:]):
-                    if mode!=item:
-                        raise ValueError
+                    if mode!=item: raise ValueError
         except SyntaxError:
-            messagebox.showinfo('Error','Invalid Time Format!\n'+self.exampleText)
+            messagebox.showerror('Error','Invalid Time Format!\n'+self.exampleText)
             self.exception=True
             return
         except ValueError:
-            messagebox.showinfo('Error','Schedule conflict!\nCourse cannot be added.')
+            messagebox.showerror('Error','Schedule conflict!\nCourse cannot be added.')
             self.exception=True
             return
         dash=time.find('-')
@@ -147,19 +143,19 @@ class coursePlan(Frame):
         grids=length(start,end)//30+1
         datetime=datetime[:weekindex]+time
         courseLabel=Label(self,text=name+[' --- '+loc,''][loc==''],bg=self.colorList[0],\
-                          borderwidth=0,width=2*self.labelWidth,height=self.widgetHeight)
+                          bd=0,width=2*self.labelWidth,height=1)
         index=-1
         if mode:
             index=self.courses.index(mode)
             self.courseList[index][0].grid_forget()
-            courseLabel.grid(row=index+4,column=6,columnspan=3,sticky=N+S+W+E)
+            courseLabel.grid(row=index+4,column=6,columnspan=3,sticky=NSEW)
             self.courses[index]=(datetime,name,loc)
             for label in self.courseLabels[index]:
                 label.grid_forget()
             self.courseLabels[index]=[]
         else:
             rowNum=len(self.courseList)+4
-            courseLabel.grid(row=rowNum,column=6,columnspan=3,sticky=N+S+W+E)
+            courseLabel.grid(row=rowNum,column=6,columnspan=3,sticky=NSEW)
             modifyButton=Button(self,text='Modify')
             modifyButton['command']=lambda :self.modify(modifyButton)
             dropButton=Button(self,text='Drop')
@@ -167,26 +163,29 @@ class coursePlan(Frame):
             pair=[modifyButton,dropButton]
             for i,button in enumerate(pair):
                 self.configureButton(button)
-                button.grid(row=rowNum,column=9+i,sticky=N+S+W+E)
+                button.grid(row=rowNum,column=9+i,sticky=NSEW)
             self.courseList.append((courseLabel,modifyButton,dropButton))
             self.courses.append((datetime,name,loc))
             self.courseLabels.append([])
 
         for weekday in datetime[:weekindex]:
             day=self.weekday[self.aweekday.index(weekday)]
-            label=Label(self,text=name+'\n'+loc,bg=self.colorList[0],\
-                        borderwidth=0,width=self.labelWidth,height=self.widgetHeight*grids)
+            label=Label(self,text=name+'\n'+loc,bg=self.colorList[0],font=self.fontList[0],\
+                        bd=0,width=self.labelWidth,height=grids)
             self.courseLabels[index].append(label)
-            label.grid(row=self.time.index(start)+1,column=self.weekday.index(day)+1,rowspan=grids,sticky=N+S+W+E)
+            label.grid(row=self.time.index(start)+1,column=self.weekday.index(day)+1,rowspan=grids,sticky=NSEW)
 
     def add(self,mode=0):
+        if len(self.courses)==20:
+            messagebox.showerror('Error','You have reached the limit of courses!')
+            return
         datetime=self.timeBox.get()
         name=self.nameBox.get()
         loc=self.locBox.get()
         if datetime in ('',self.exampleText) or (datetime,name,loc) in self.courses:
             return
         if name=='':
-            messagebox.showinfo('Error','Please input course name!')
+            messagebox.showerror('Error','Please input course name!')
             return
         self.putLabel(datetime,name,loc,mode)
         if self.exception:
@@ -204,13 +203,19 @@ class coursePlan(Frame):
             ez.fwrite('settings.txt',content)
         if content=={}:
             return
-        index=self.colorList.index(content['color'])
-        self.colorList=self.colorList[index:]+self.colorList[:index]
+        color=content['color']
+        if color in self.colorList:
+            index1=self.colorList.index(color)
+            self.colorList=self.colorList[index1:]+self.colorList[:index1]
+        font=content['font']
+        if font in self.fontList:
+            index2=self.fontList.index(font)
+            self.fontList=self.fontList[index2:]+self.fontList[:index2]
         for datetime,name,loc in content['courses']:
             self.putLabel(datetime,name,loc)
 
     def save(self):
-        content={'courses':self.courses,'color':self.colorList[0]}
+        content={'courses':self.courses,'color':self.colorList[0],'font':self.fontList[0]}
         ez.fwrite('settings.txt',content)
 
     def clear(self):
@@ -263,13 +268,13 @@ class coursePlan(Frame):
             rowNum=i+index+4
             for j,item in enumerate(widget):
                 item.grid_forget()
-                item.grid(row=rowNum,column=6+j+(j!=0)*2,columnspan=1+(j==0)*2,sticky=N+S+W+E)
+                item.grid(row=rowNum,column=6+j+(j!=0)*2,columnspan=1+(j==0)*2,sticky=NSEW)
 
     def configureButton(self,button):
         button.configure(bg=self.buttonColor,\
-                         height=self.widgetHeight,\
+                         height=1,\
                          width=self.buttonWidth,\
-                         borderwidth=0,\
+                         bd=0,\
                          relief=FLAT)
 
     def switch(self,event):
@@ -288,6 +293,13 @@ class coursePlan(Frame):
                 label['bg']=self.colorList[0]
         for item in self.courseList:
             item[0]['bg']=self.colorList[0]
+
+    def switchFont(self):
+        self.fontList=self.fontList[1:]+[self.fontList[0]]
+        print(self.fontList[0])
+        for lst in self.courseLabels:
+            for label in lst:
+                label['font']=self.fontList[0]
 
     def focusIn(self,event):
         if self.timeBox.get()==self.exampleText:
