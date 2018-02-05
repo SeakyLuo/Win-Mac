@@ -91,6 +91,7 @@ class coursePlan(Frame):
         self.fontList=['Arial', 'Calibri', 'Cambria', 'Century', 'Corbel', 'Courier', 'Georgia','Century', 'Helvetica', 'Impact', 'STENCIL', 'Times', 'TkDefaultFont', 'Verdana']
         self.nameBox.focus()
         self.focusOut('<FocusOut>')
+        self.modifyButtons=[]
         self.exception=False
 
     def putLabel(self,datetime,name,loc,mode=0):
@@ -158,6 +159,7 @@ class coursePlan(Frame):
             courseLabel.grid(row=rowNum,column=6,columnspan=3,sticky=NSEW)
             modifyButton=Button(self,text='Modify')
             modifyButton['command']=lambda :self.modify(modifyButton)
+            self.modifyButtons.append(modifyButton)
             dropButton=Button(self,text='Drop')
             dropButton['command']=lambda :self.drop(dropButton)
             pair=[modifyButton,dropButton]
@@ -243,6 +245,11 @@ class coursePlan(Frame):
             self.clearBox()
             button['text']='Modify'
         else:
+            ## 如果先按了一个modify再按了另一个modify
+            for mb in self.modifyButtons:
+                if mb['text']=='Cancel':
+                    self.modify(mb)
+                    break
             self.clearBox()
             self.focusIn('<FocusIn>')
             self.timeBox.insert(0,datetime)
