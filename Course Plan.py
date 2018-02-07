@@ -33,6 +33,8 @@ class coursePlan(Frame):
         self.buttonColor='SeaGreen1'
         self.labelWidth=18
         self.buttonWidth=6
+        self.colorList=['Aquamarine', 'Gold', 'IndianRed1', 'Khaki', 'MistyRose','Moccasin', 'OliveDrab1', 'Orchid1','PeachPuff', 'Salmon', 'SkyBlue', 'SpringGreen', 'Thistle', 'Tan1', 'Thistle']
+        self.fontList=['Arial', 'Calibri', 'Cambria', 'Century', 'Corbel', 'Courier', 'Georgia','Century', 'Helvetica', 'Impact', 'STENCIL', 'Times', 'TkDefaultFont', 'Verdana']
         Label(self,text='Time',relief=FLAT,bg='#00ffff',\
                   width=self.buttonWidth,height=1).grid(row=0,column=0,sticky=NSEW)
         self.aweekday=['m','t','w','r','f']
@@ -90,8 +92,6 @@ class coursePlan(Frame):
         self.courses=[]
         self.courseLabels=[]
         self.courseList=[]
-        self.colorList=['Aquamarine', 'Gold', 'IndianRed1', 'Khaki', 'MistyRose','Moccasin', 'OliveDrab1', 'Orchid1','PeachPuff', 'Salmon', 'SkyBlue', 'SpringGreen', 'Thistle', 'Tan1', 'Thistle']
-        self.fontList=['Arial', 'Calibri', 'Cambria', 'Century', 'Corbel', 'Courier', 'Georgia','Century', 'Helvetica', 'Impact', 'STENCIL', 'Times', 'TkDefaultFont', 'Verdana']
         self.nameBox.focus()
         self.focusOut('<FocusOut>')
         self.modifyButtons=[]
@@ -276,6 +276,7 @@ class coursePlan(Frame):
         for widget in self.courseList:
             for item in widget:
                 item.grid_forget()
+        self.setup()
 
     def configureButton(self,button):
         button.configure(bg=self.buttonColor,\
