@@ -70,7 +70,7 @@ class coursePlan(Frame):
             box.bind('<KeyRelease>',self.switch)
         self.setup()
         self.addButton=Button(self,text='Add',command=self.add)
-        self.clearButton=Button(self,text='Clear',command=self.clear)
+        self.clearButton=Button(self,text='Clear',command=self.clearBox)
         self.readButton=Button(self,text='Read',command=self.read)
         self.saveButton=Button(self,text='Save',command=self.save)
         self.colorButton=Button(self,text='Color',command=self.switchColor)
@@ -81,6 +81,9 @@ class coursePlan(Frame):
             button.grid(row=i//2,column=9+i%2,sticky=NSEW)
         Label(self,text='Course List',relief=FLAT,bg='DeepSkyBlue',\
               bd=0,width=2*self.labelWidth,height=1).grid(row=3,column=6,columnspan=3,sticky=NSEW)
+        self.dropAllButton=Button(self,text='Drop All',command=self.dropAll)
+        self.configureButton(self.dropAllButton)
+        self.dropAllButton.grid(row=3,column=10)
         self.read()
 
     def setup(self):
@@ -220,16 +223,6 @@ class coursePlan(Frame):
         content={'courses':self.courses,'color':self.colorList[0],'font':self.fontList[0]}
         ez.fwrite('settings.txt',content)
 
-    def clear(self):
-        for lst in self.courseLabels:
-            for label in lst:
-                label.grid_forget()
-        for widget in self.courseList:
-            for item in widget:
-                item.grid_forget()
-        self.clearBox()
-        self.setup()
-
     def clearBox(self):
         if self.timeBox.get()!=self.exampleText:
             self.timeBox.delete(0, END)
@@ -239,18 +232,17 @@ class coursePlan(Frame):
         self.nameBox.focus()
 
     def modify(self,button):
-        index=button.grid_info()['row']-4
-        data=datetime,name,loc=self.courses[index]
-        if (self.timeBox.get(),self.nameBox.get(),self.locBox.get())==data:
-            self.clearBox()
+        self.clearBox()
+        if button['text']=='Cancel':
             button['text']='Modify'
-        else:
+        elif button['text']=='Modify':
             ## 如果先按了一个modify再按了另一个modify
             for mb in self.modifyButtons:
                 if mb['text']=='Cancel':
                     self.modify(mb)
                     break
-            self.clearBox()
+            index=button.grid_info()['row']-4
+            data=datetime,name,loc=self.courses[index]            
             self.focusIn('<FocusIn>')
             self.timeBox.insert(0,datetime)
             self.nameBox.insert(0,name)
@@ -276,6 +268,14 @@ class coursePlan(Frame):
             for j,item in enumerate(widget):
                 item.grid_forget()
                 item.grid(row=rowNum,column=6+j+(j!=0)*2,columnspan=1+(j==0)*2,sticky=NSEW)
+                
+    def dropAll(self):
+        for lst in self.courseLabels:
+            for label in lst:
+                label.grid_forget()
+        for widget in self.courseList:
+            for item in widget:
+                item.grid_forget()
 
     def configureButton(self,button):
         button.configure(bg=self.buttonColor,\
@@ -303,7 +303,6 @@ class coursePlan(Frame):
 
     def switchFont(self):
         self.fontList=self.fontList[1:]+[self.fontList[0]]
-        print(self.fontList[0])
         for lst in self.courseLabels:
             for label in lst:
                 label['font']=self.fontList[0]
