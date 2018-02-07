@@ -160,12 +160,14 @@ class coursePlan(Frame):
         else:
             rowNum=len(self.courseList)+4
             courseLabel.grid(row=rowNum,column=6,columnspan=3,sticky=NSEW)
+            copyButton=Button(self,text='Copy')
+            copyButton['command']=lambda :self.copy(copyButton)
             modifyButton=Button(self,text='Modify')
             modifyButton['command']=lambda :self.modify(modifyButton)
             self.modifyButtons.append(modifyButton)
             dropButton=Button(self,text='Drop')
             dropButton['command']=lambda :self.drop(dropButton)
-            pair=[modifyButton,dropButton]
+            butts=[copyButton,modifyButton,dropButton]
             for i,button in enumerate(pair):
                 self.configureButton(button)
                 button.grid(row=rowNum,column=9+i,sticky=NSEW)
@@ -230,6 +232,14 @@ class coursePlan(Frame):
         self.nameBox.delete(0,END)
         self.locBox.delete(0,END)
         self.nameBox.focus()
+        
+    def copy(self,button):
+        index=eval(button.grid_info()['row'])-4
+        info=self.courses[index]
+        self.clearBox()
+        self.focusIn('<FocusIn>')
+        for i,box in enumerate(self.boxList):
+            box.insert(0,info[i])
 
     def modify(self,button):
         self.clearBox()
