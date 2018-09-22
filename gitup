@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ $# -eq 0 ]; then
+    git add .; git commit -m "Update"; git push origin master
+elif [ $# -eq 1 ]; then
+    git add .; git commit -m $1; git push origin master
+else
+    echo "Usage: gitup or gitup \"message\" "
+    exit 1
+fi
+exit 0
