@@ -3,7 +3,18 @@
 if [ $# -eq 0 ]; then
     git add .; git commit -m "Update"; git push origin master
 elif [ $# -eq 1 ]; then
-    git add .; git commit -m $1; git push origin master
+    if [ "$1" = "-f" ]; then
+        git add .; git commit -m "Update"; git push -f origin master
+    else
+        git add .; git commit -m $1; git push origin master
+    fi
+elif [ $# -eq 2 ]; then
+    if [ "$1" = "-f" ]; then
+        git add .; git commit -m $2; git push -f origin master
+    else
+        echo "Usage: gitup -f \"message\""
+        exit 1
+    fi
 else
     echo "Usage: gitup or gitup \"message\" "
     exit 1
