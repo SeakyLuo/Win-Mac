@@ -1,0 +1,41 @@
+Collecting mysqlclient
+  Using cached https://files.pythonhosted.org/packages/4d/38/c5f8bac9c50f3042c8f05615f84206f77f03db79781db841898fde1bb284/mysqlclient-1.4.4.tar.gz
+Installing collected packages: mysqlclient
+  Running setup.py install for mysqlclient: started
+    Running setup.py install for mysqlclient: finished with status 'error'
+    ERROR: Command errored out with exit status 1:
+     command: /Library/Frameworks/Python.framework/Versions/3.7/bin/python3.7 -u -c 'import sys, setuptools, tokenize; sys.argv[0] = '"'"'/private/var/folders/tr/hbh0ktxn0tgbvwdt0883pk900000gn/T/pip-install-itkx_ihk/mysqlclient/setup.py'"'"'; __file__='"'"'/private/var/folders/tr/hbh0ktxn0tgbvwdt0883pk900000gn/T/pip-install-itkx_ihk/mysqlclient/setup.py'"'"';f=getattr(tokenize, '"'"'open'"'"', open)(__file__);code=f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' install --record /private/var/folders/tr/hbh0ktxn0tgbvwdt0883pk900000gn/T/pip-record-t695ua11/install-record.txt --single-version-externally-managed --compile
+         cwd: /private/var/folders/tr/hbh0ktxn0tgbvwdt0883pk900000gn/T/pip-install-itkx_ihk/mysqlclient/
+    Complete output (30 lines):
+    running install
+    running build
+    running build_py
+    creating build
+    creating build/lib.macosx-10.9-x86_64-3.7
+    creating build/lib.macosx-10.9-x86_64-3.7/MySQLdb
+    copying MySQLdb/__init__.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb
+    copying MySQLdb/_exceptions.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb
+    copying MySQLdb/compat.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb
+    copying MySQLdb/connections.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb
+    copying MySQLdb/converters.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb
+    copying MySQLdb/cursors.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb
+    copying MySQLdb/release.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb
+    copying MySQLdb/times.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb
+    creating build/lib.macosx-10.9-x86_64-3.7/MySQLdb/constants
+    copying MySQLdb/constants/__init__.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb/constants
+    copying MySQLdb/constants/CLIENT.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb/constants
+    copying MySQLdb/constants/CR.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb/constants
+    copying MySQLdb/constants/ER.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb/constants
+    copying MySQLdb/constants/FIELD_TYPE.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb/constants
+    copying MySQLdb/constants/FLAG.py -> build/lib.macosx-10.9-x86_64-3.7/MySQLdb/constants
+    running build_ext
+    building 'MySQLdb._mysql' extension
+    creating build/temp.macosx-10.9-x86_64-3.7
+    creating build/temp.macosx-10.9-x86_64-3.7/MySQLdb
+    gcc -Wno-unused-result -Wsign-compare -Wunreachable-code -fno-common -dynamic -DNDEBUG -g -fwrapv -O3 -Wall -arch x86_64 -g -Dversion_info=(1,4,4,'final',0) -D__version__=1.4.4 -I/usr/local/Cellar/mysql/8.0.17/include/mysql -I/Library/Frameworks/Python.framework/Versions/3.7/include/python3.7m -c MySQLdb/_mysql.c -o build/temp.macosx-10.9-x86_64-3.7/MySQLdb/_mysql.o
+    gcc -bundle -undefined dynamic_lookup -arch x86_64 -g build/temp.macosx-10.9-x86_64-3.7/MySQLdb/_mysql.o -L/usr/local/Cellar/mysql/8.0.17/lib -lmysqlclient -lssl -lcrypto -o build/lib.macosx-10.9-x86_64-3.7/MySQLdb/_mysql.cpython-37m-darwin.so
+    ld: library not found for -lssl
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+    error: command 'gcc' failed with exit status 1
+    ----------------------------------------
+ERROR: Command errored out with exit status 1: /Library/Frameworks/Python.framework/Versions/3.7/bin/python3.7 -u -c 'import sys, setuptools, tokenize; sys.argv[0] = '"'"'/private/var/folders/tr/hbh0ktxn0tgbvwdt0883pk900000gn/T/pip-install-itkx_ihk/mysqlclient/setup.py'"'"'; __file__='"'"'/private/var/folders/tr/hbh0ktxn0tgbvwdt0883pk900000gn/T/pip-install-itkx_ihk/mysqlclient/setup.py'"'"';f=getattr(tokenize, '"'"'open'"'"', open)(__file__);code=f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' install --record /private/var/folders/tr/hbh0ktxn0tgbvwdt0883pk900000gn/T/pip-record-t695ua11/install-record.txt --single-version-externally-managed --compile Check the logs for full command output.
