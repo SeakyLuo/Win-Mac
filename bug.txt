@@ -1,1 +1,12 @@
-https://prod.liveshare.vsengsaas.visualstudio.com/join?8CE840DD943A99787FE535B4AE16BB791DCD
+def remove_ap_from_cloud(driver, ap_name, img_seq):
+    try:
+        goto_aplist_cloud(driver)
+        if find_element(_global.ELEMENT["云端AP列表"]):
+            if img_seq > 0:
+                take_screenshot(driver, 1, img_seq, 2) #the last param 2 means caller's caller, for image file name
+            if find_element('new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollIntoView(new UiSelector().className("android.widget.TextView").textMatches("^'+ ap_name + '$").instance(0))'):
+                #得到兄弟节点"删除"按钮并点击
+                driver.find_element_by_android_uiautomator('new UiSelector().className("android.widget.TextView").textMatches("^'+ ap_name + '$").fromParent(new UiSelector().className("android.widget.TextView").text("删除"))').click()
+                driver.find_element_by_xpath(_global.ELEMENT["删除热点确认button"]).click()
+                sleep(5)
+                driver.find_elements_by_android_uiautomator('new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollIntoView(new UiSelector().className("android.widget.TextView").textMatches("^'+ ap_name + '$").instance(0))')     
