@@ -1,15 +1,2 @@
-{
-            'automationName': 'uiautomator2',
-            'platformName': 'ANDROID',
-            'noReset': True,
-            # Enable Unicode input
-            'unicodeKeyboard': True,
-            # Reset keyboard to its original state, after running Unicode tests with unicodeKeyboard capability
-            'resetKeyboard': True,
-            # Required for grid redirect request.
-            'deviceName': self.device,
-            'udid': self.udid,
-            'platformVersion': self.sys_ver,
-            'browserName': 'Chrome',
-            'newCommandTimeout': 300
-        }
+  (Session info: chrome=72.0.3626.105)
+  (Driver info: chromedriver=2.46.628411 (3324f4c8be9ff2f70a05a30ebc72ffb013e1a71e),platform=Mac OS X 10.14.4 x86_64)
