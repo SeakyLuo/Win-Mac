@@ -1,8 +1,2 @@
-        while True:
-            url_bar = utils.find_element(d, 'com.android.chrome:id/url_bar')
-            if url_bar:
-                break
-            time.sleep(1)
-        url_bar.click()
-        url_bar.set_text('https://a.lianwifi.com/app_h5/jisu/wifiapk/sms.html?c=uvtest&type=1')
-        utils.click(d, '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout[2]/android.widget.ListView/android.view.ViewGroup[1]/android.view.ViewGroup')
+utils.click(d, 'com.android.chrome:id/menu_button')
+utils.click(d, '/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.ListView/android.widget.LinearLayout[3]')
