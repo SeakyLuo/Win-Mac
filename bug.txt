@@ -1,2 +1,0 @@
-utils.click(d, 'com.android.chrome:id/menu_button')
-utils.click(d, '/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.ListView/android.widget.LinearLayout[3]')
