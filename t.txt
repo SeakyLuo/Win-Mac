@@ -1,0 +1,11 @@
+{
+  "automationName": "uiautomator2",
+  "platformName": "ANDROID",
+  "noReset": true,
+  "unicodeKeyboard": true,
+  "resetKeyboard": true,
+  "udid": "ea55de01",
+  "appPackage": "com.oppo.market",
+  "appActivity": "com.oppo.market.activity.MainActivity",
+  "newCommandTimeout": 300
+}
