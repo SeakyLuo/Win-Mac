@@ -13,7 +13,8 @@ def getSolution(target):
 
     recursive(0, options)
     cost = lambda d: sum(k * v for k, v in d.items())
-    print(solution := min(solutions, key=lambda d: (cost(d), sum(d.values()))))
+    solution = min(solutions, key=lambda d: (cost(d), sum(d.values())))
+    print({ k: v for k, v in solution.items() if v > 0 } )
     print(cost(solution))
 
 getSolution(189)
