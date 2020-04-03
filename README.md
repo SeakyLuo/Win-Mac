@@ -1,2 +1,2 @@
 # Win-Mac
-Help tranferring programs between Windows and Mac.
+Help tranferring files between Windows and Mac.
