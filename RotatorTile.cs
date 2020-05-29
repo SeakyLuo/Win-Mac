@@ -269,7 +269,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Controls
                 }
             };
             sb.Begin();
-            OnCurrentItemChanging.Invoke(this, new RotatorTileChangingEventArgs(_currentElement?.DataContext, _nextElement?.DataContext));
+            OnCurrentItemChanging?.Invoke(this, new RotatorTileChangingEventArgs(_currentElement?.DataContext, _nextElement?.DataContext));
         }
 
         private void UpdateTranslateXY()
